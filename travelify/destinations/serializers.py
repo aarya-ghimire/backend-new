@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Destination, Category, Review
 
 class DestinationSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True)  # Ensure image field provides full URL
+
     class Meta:
         model = Destination
         fields = '__all__'  # Includes all fields
