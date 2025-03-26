@@ -41,10 +41,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    
-    'corsheaders.middleware.CorsMiddleware',  # CORS Middleware
     
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,9 +108,28 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
+    "http://localhost:3000",  # React development server
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000",
 ]
-CORS_ALLOW_CREDENTIALS = True  # Allow cookies, authentication tokens
+
+# For development convenience - you can remove this in production
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# Add these headers for easier debugging
+CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # REST Framework Configuration (JWT Authentication)
 REST_FRAMEWORK = {
