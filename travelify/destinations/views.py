@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Destination, Review
 from .serializers import DestinationSerializer, ReviewSerializer
+from .models import Category  # Import the Category model
+from .serializers import CategorySerializer  # Import the Category serializer
+
 
 # Create a new destination or get all destinations
 @api_view(['GET', 'POST'])
@@ -100,3 +103,24 @@ def get_reviews(request, destination_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])  # Anyone can view, but only authenticated users can create
+def category_list_create(request):
+    if request.method == 'GET':
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        if not request.user.is_authenticated:
+            return Response({"ofBackendMessage": "Authentication required to add a category."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "ofBackendMessage": "Category added successfully!",
+                "category": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
