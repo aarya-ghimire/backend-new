@@ -3,6 +3,7 @@ from users.models import CustomUser
 
 # Destination Model
 class Destination(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)  # User who added the destination
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     location = models.CharField(max_length=255)
@@ -16,7 +17,7 @@ class Destination(models.Model):
     def __str__(self):
         return self.name
 
-    # Optionally add a method to update fields like rating or image if needed
+    # Method to update fields
     def update_fields(self, name=None, description=None, location=None, country=None,
                       best_time_to_visit=None, activities=None, average_cost=None, rating=None, image=None):
         if name:

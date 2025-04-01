@@ -2,10 +2,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Destination, Review
-from .serializers import DestinationSerializer, ReviewSerializer
-from .models import Category  # Import the Category model
-from .serializers import CategorySerializer  # Import the Category serializer
+from .models import Destination, Review, Category  # Import all models
+from .serializers import DestinationSerializer, ReviewSerializer, CategorySerializer
 
 
 # Create a new destination or get all destinations
@@ -23,12 +21,14 @@ def destinations_list_create(request):
 
         serializer = DestinationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            # Set the 'user' field to the current authenticated user
+            serializer.save(user=request.user)
             return Response({
                 "ofBackendMessage": "Destination added successfully!",
                 "destination": serializer.data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # Get, update, or delete a specific destination
@@ -48,6 +48,9 @@ def destination_detail(request, id):
         if not request.user.is_authenticated:
             return Response({"ofBackendMessage": "Authentication required to update a destination."}, status=status.HTTP_401_UNAUTHORIZED)
 
+        if destination.user != request.user:
+            return Response({"ofBackendMessage": "You can only update your own destinations."}, status=status.HTTP_403_FORBIDDEN)
+
         serializer = DestinationSerializer(destination, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -60,6 +63,9 @@ def destination_detail(request, id):
     elif request.method == 'DELETE':
         if not request.user.is_authenticated:
             return Response({"ofBackendMessage": "Authentication required to delete a destination."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if destination.user != request.user:
+            return Response({"ofBackendMessage": "You can only delete your own destinations."}, status=status.HTTP_403_FORBIDDEN)
 
         destination.delete()
         return Response({"ofBackendMessage": "Destination deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
@@ -86,7 +92,6 @@ def add_review(request, destination_id):
         }, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 # Get all reviews for a specific destination
