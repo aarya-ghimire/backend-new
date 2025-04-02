@@ -107,6 +107,28 @@ def get_reviews(request, destination_id):
     serializer = ReviewSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_review(request, review_id):
+    try:
+        review = Review.objects.get(id=review_id)
+    except Review.DoesNotExist:
+        return Response({"ofBackendMessage": "Review not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if review.user != request.user:
+        return Response({"ofBackendMessage": "You can only edit your own reviews."}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = ReviewSerializer(review, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "ofBackendMessage": "Review updated successfully!",
+            "review": serializer.data
+        }, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([AllowAny])  # Anyone can view, but only authenticated users can create
